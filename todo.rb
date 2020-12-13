@@ -18,20 +18,12 @@ configure(:development) do
 end
 
 helpers do
-  def todos_count(list)
-    list[:todos].length
-  end
-
   def list_complete?(list)
-    todos_count(list).positive? && todos_remaining_count(list).zero?
+    list[:todos_count] > 0 && list[:todos_remaining_count] == 0
   end
 
   def list_class(list)
     'complete' if list_complete?(list)
-  end
-
-  def todos_remaining_count(list)
-    list[:todos].reject { |todo| todo[:completed] }.size
   end
 
   def sort_lists(lists, &block)
@@ -39,7 +31,7 @@ helpers do
 
     incomplete_lists.each(&block)
     complete_lists.each(&block)
-  end#
+  end
 
   def sort_todos(todos)
     complete_todos, incomplete_todos = todos.partition { |todo| todo[:completed] } #
@@ -125,6 +117,7 @@ end
 get '/lists/:id' do
   id = params[:id].to_i
   @list = load_list(id)
+  @todos = @storage.find_todos_for_list(id)
 
   erb :list, layout: :layout
 end
